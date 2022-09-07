@@ -33,13 +33,9 @@ public class TransactionController {
     //交易--------------------------------------------------------------------------------------------------------
     @PostMapping()
     public TransactionResponse transaction(@RequestBody TransactionRequest transactionRequest) {
-        String response = transactionService.transaction(transactionRequest);
-        if (response.equals("Transaction successful") || response.equals("Transaction complete,qty is 0")) {
-            TransactionDetail transactionDetail=transactionRepo.findByDocSeqAndTradeDate(transactionRequest.getDocSeq(), transactionRequest.getTradeDate());
-            return new TransactionResponse(new UnrealResult(transactionDetail.getTradeDate(), transactionDetail.getDocSeq(), transactionDetail.getStock(),stockInfoRepo.findByStock(transactionRequest.getStock()).getStockName(), transactionRequest.getPrice(),stockInfoRepo.findByStock(transactionRequest.getStock()).getCurPrice(), transactionRequest.getQty(), stockBalanceRepo.getRemainQty(transactionRequest.getBranchNo(), transactionRequest.getCustSeq(), transactionRequest.getStock()), transactionDetail.getFee(), transactionDetail.getNetAmt(),null,null),"000","");
-        }
-        return new TransactionResponse(null, "002", response);
+        return transactionService.transaction(transactionRequest);
     }
+
 
 
     //查詢未實現損益------------------------------------------------------------------------------------------------

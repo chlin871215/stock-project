@@ -12,7 +12,8 @@ public interface StockBalanceRepo extends JpaRepository<StockBalance, StockBalan
     @Query(value = "select * from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3 order by DocSeq desc limit 1 ;",nativeQuery = true)
     StockBalance findByBranchNoAndCustSeqAndStock(String branchNo, String custSeq, String stock);
 
-    @Query(value = "select sum(RemainQty) from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3 ;",nativeQuery = true)
+    @Query(value = "select RemainQty from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3 order by ModDate desc,ModTime desc limit 1 ;",nativeQuery = true)
     Double getRemainQty(String branchNo, String custSeq, String stock);
+
 
 }
