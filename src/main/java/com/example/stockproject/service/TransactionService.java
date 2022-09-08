@@ -124,6 +124,7 @@ public class TransactionService {
         List<UnrealProfitResult> unrealProfitResults = new ArrayList<>();
 
         for (String stock:stockList){
+            getRandomPrice(stock);// 讓股票資訊價格隨機更動
             StockInfo stockInfo = stockInfoRepo.findByStock(stock);
             UnrealProfitResult unrealProfitResult = new UnrealProfitResult();
             unrealProfitResult.setDetailList(getResultList(new UnrealProfitRequest(unrealProfitRequest.getBranchNo(),unrealProfitRequest.getCustSeq(),stock)));
@@ -227,8 +228,6 @@ public class TransactionService {
         if (transactionRequest.getStock().isBlank()) return "Stock data wrong";
         //check:price
         if (transactionRequest.getPrice() <= 0) return "Price data wrong";
-        //check:qty
-        if (transactionRequest.getQty() <= 0) return "Qty data wrong";
         //check:docSeq是否存在
         if (null != transactionRepo.findByDocSeqAndTradeDate(transactionRequest.getDocSeq(), transactionRequest.getTradeDate()))
             return "This DocSeq already exist";
