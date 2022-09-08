@@ -40,7 +40,7 @@ public class TransactionDetail {
     @Column(name = "Fee")
     private Integer fee;
     @Column(name = "Tax")
-    private Double tax;
+    private Integer tax;
     @Column(name = "StinTax")
     private Double transferTax;
     @Column(name = "NetAmt")

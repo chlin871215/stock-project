@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/transaction")
+@RequestMapping("/api/v1/unreal")
 public class TransactionController {
 
     @Autowired
@@ -31,16 +31,25 @@ public class TransactionController {
     StockBalanceRepo stockBalanceRepo;
 
     //交易--------------------------------------------------------------------------------------------------------
-    @PostMapping()
+    @PostMapping("/add")
     public TransactionResponse transaction(@RequestBody TransactionRequest transactionRequest) {
         return transactionService.transaction(transactionRequest);
     }
 
 
 
-    //查詢未實現損益------------------------------------------------------------------------------------------------
-    @PostMapping("/unreal")
-    public SumUnrealProfit unrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
+    //查詢彙總未實現損益------------------------------------------------------------------------------------------------
+    @PostMapping("/sum")
+    public SumUnrealProfit sumUnrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
         return new SumUnrealProfit(null, null, null);
     }
+
+    //查詢個別未實現損益------------------------------------------------------------------------------------------------
+    /*@PostMapping("/detail")
+    public SumUnrealProfit sumUnrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
+        return new SumUnrealProfit(null, null, null);
+    }
+
+     */
+
 }

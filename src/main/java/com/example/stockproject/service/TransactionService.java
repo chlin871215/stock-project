@@ -32,7 +32,7 @@ public class TransactionService {
 
     public TransactionResponse transaction(TransactionRequest transactionRequest) {
         //check:request資訊是否正確、股票餘額是否足夠
-        if (null!=check(transactionRequest))return new TransactionResponse(null,"002",check(transactionRequest));
+        if (null != check(transactionRequest)) return new TransactionResponse(null, "002", check(transactionRequest));
         //創建明細--------------------------------------------------------------------------------------------------
         getRandomPrice(transactionRequest.getStock());// 讓股票資訊價格隨機更動
         TransactionDetail transactionDetail = new TransactionDetail();
@@ -55,29 +55,44 @@ public class TransactionService {
             transactionDetail.setModUser("Berlin");//modUser
             transactionRepo.save(transactionDetail);//存進sql
         }
-        //建立餘額--------------------------------------------------------------------------------------------------
+        //更新餘額--------------------------------------------------------------------------------------------------
         {
             StockBalance newStockBalance = new StockBalance();
-            newStockBalance.setPrice(getBalancePrice(0.0, 0.0, transactionDetail.getPrice(), transactionDetail.getQty()));
-            newStockBalance.setQty(getBalanceQty(0.0, transactionDetail.getQty(), transactionDetail.getBsType()));
-            newStockBalance.setRemainQty(getBalanceQty((null != stockBalanceRepo.getRemainQty(transactionRequest.getBranchNo(), transactionRequest.getCustSeq(), transactionRequest.getStock())) ? stockBalanceRepo.getRemainQty(transactionRequest.getBranchNo(), transactionRequest.getCustSeq(), transactionRequest.getStock()) : 0, transactionDetail.getQty(), transactionDetail.getBsType()));
-            newStockBalance.setFee(transactionDetail.getFee());
-            newStockBalance.setCost(getBalanceCost(0.0, transactionDetail.getNetAmt(), transactionDetail.getBsType()));
             newStockBalance.setTradeDate(transactionDetail.getTradeDate());
             newStockBalance.setBranchNo(transactionDetail.getBranchNo());
             newStockBalance.setCustomerSeq(transactionDetail.getCustomerSeq());
             newStockBalance.setDocSeq(transactionDetail.getDocSeq());
             newStockBalance.setStock(transactionDetail.getStock());
+            newStockBalance.setPrice(getBalancePrice(0.0, 0.0, transactionDetail.getPrice(), transactionDetail.getQty()));
+            newStockBalance.setQty(getBalanceQty(0.0, transactionDetail.getQty(), transactionDetail.getBsType()));
+            newStockBalance.setRemainQty(getBalanceQty(0.0, transactionDetail.getQty(), transactionDetail.getBsType()));
+            newStockBalance.setFee(transactionDetail.getFee());
+            newStockBalance.setCost(getBalanceCost(0.0, transactionDetail.getNetAmt(), transactionDetail.getBsType()));
             newStockBalance.setModDate(transactionDetail.getModDate());
             newStockBalance.setModTime(transactionDetail.getModTime());
             newStockBalance.setModUser(transactionDetail.getModUser());
             stockBalanceRepo.save(newStockBalance);
         }
-
-        return new TransactionResponse(new UnrealResult(transactionDetail.getTradeDate(), transactionDetail.getDocSeq(), transactionDetail.getStock(),stockInfoRepo.findByStock(transactionRequest.getStock()).getStockName(), transactionRequest.getPrice(),stockInfoRepo.findByStock(transactionRequest.getStock()).getCurPrice(), transactionRequest.getQty(), stockBalanceRepo.getRemainQty(transactionRequest.getBranchNo(), transactionRequest.getCustSeq(), transactionRequest.getStock()), transactionDetail.getFee(), transactionDetail.getNetAmt(),(double)Math.round(stockInfoRepo.findByStock(transactionRequest.getStock()).getCurPrice()* transactionRequest.getQty()),null),"000","");
+        return new TransactionResponse(
+                new UnrealResult(
+                        transactionDetail.getTradeDate(),
+                        transactionDetail.getDocSeq(),
+                        transactionDetail.getStock(),
+                        stockInfoRepo.findByStock(transactionRequest.getStock()).getStockName(),
+                        transactionRequest.getPrice(),
+                        stockInfoRepo.findByStock(transactionRequest.getStock()).getCurPrice(),
+                        transactionRequest.getQty(),
+                        stockBalanceRepo.getRemainQty(transactionRequest.getBranchNo(), transactionRequest.getCustSeq(), transactionRequest.getStock()),
+                        transactionDetail.getFee(),
+                        Math.abs(transactionDetail.getNetAmt()),
+                        (double) Math.round(stockInfoRepo.findByStock(transactionRequest.getStock()).getCurPrice() * transactionRequest.getQty()),
+                        getUnreal(new UnrealProfitRequest(transactionRequest.getBranchNo(), transactionRequest.getCustSeq(), transactionRequest.getStock()))
+                ),
+                "000",
+                "");
     }
 
-    public String check(TransactionRequest transactionRequest) {
+    private String check(TransactionRequest transactionRequest) {
         //check:request資訊是否正確、股票餘額是否足夠
         //check:tradeDate
         if (transactionRequest.getTradeDate().isBlank()) return "TradeDate data wrong";
@@ -128,29 +143,31 @@ public class TransactionService {
      */
     public String unrealizedGainsAndLosses(UnrealProfitRequest unrealProfitRequest) {
         //check
-        {
-            if (unrealProfitRequest.getStock().isEmpty() || unrealProfitRequest.getStock().isBlank()) {
-                return "Stock data wrong";
-            }
-            if (null == stockInfoRepo.findByStock(unrealProfitRequest.getStock())) {
-                return "Stock doesn't exist";
-            }
-            if (null == stockBalanceRepo.findByBranchNoAndCustSeqAndStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getBranchNo(), unrealProfitRequest.getStock())) {
-                return "Stock Qty is 0";
-            }
-        }
+        if (null != check(unrealProfitRequest)) return check(unrealProfitRequest);
         //process
-        {
-            getRandomPrice(unrealProfitRequest.getStock());// 讓股票資訊價格隨機更動
-            StockBalance stockBalance = stockBalanceRepo.findByBranchNoAndCustSeqAndStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq(), unrealProfitRequest.getStock());
-            Double cost = stockBalance.getCost();
-            Double qty = stockBalance.getQty();
-            Double curPrice = stockInfoRepo.findByStock(unrealProfitRequest.getStock()).getCurPrice();
-            return Double.toString(Math.round(((curPrice * qty) - cost - getFee(getAmt(curPrice, qty)) - getTax(getAmt(curPrice, qty), "S")) * 10000.0) / 10000.0);
-        }
+        return Double.toString(getUnreal(unrealProfitRequest));
+    }
+
+
+    private String check(UnrealProfitRequest unrealProfitRequest) {
+        if (unrealProfitRequest.getBranchNo().isBlank()) return "BranchNo data wrong";
+        if (unrealProfitRequest.getCustSeq().isBlank()) return "CustSeq data wrong";
+        if (unrealProfitRequest.getStock().isBlank()) return "Stock data wrong";
+        if (null == stockInfoRepo.findByStock(unrealProfitRequest.getStock())) return "Stock doesn't exist";
+        if (null == stockBalanceRepo.findByBranchNoAndCustSeqAndStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getBranchNo(), unrealProfitRequest.getStock()))
+            return "Stock Qty is 0";
+        return null;
     }
 
     //method-------------------------------------------------------------------------------------------------------
+    private Double getUnreal(UnrealProfitRequest unrealProfitRequest) {
+        getRandomPrice(unrealProfitRequest.getStock());// 讓股票資訊價格隨機更動
+        StockBalance stockBalance = stockBalanceRepo.findByBranchNoAndCustSeqAndStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq(), unrealProfitRequest.getStock());
+        Double cost = stockBalance.getCost();
+        Double qty = stockBalance.getQty();
+        Double curPrice = stockInfoRepo.findByStock(unrealProfitRequest.getStock()).getCurPrice();
+        return Math.round(((curPrice * qty) - cost - getFee(getAmt(curPrice, qty)) - getTax(getAmt(curPrice, qty), "S")) * 10000.0) / 10000.0;
+    }
 
     private String getNewDocSeq(String tradeDate) {//流水單號
         String lastDocSeqEng = "AA";
@@ -195,11 +212,11 @@ public class TransactionService {
         return (int) Math.round(amt * 0.001425);
     }
 
-    private Double getTax(Double amt, String bsType) {
-        return (bsType.equals("S")) ? (double) Math.round(amt * 0.003) : 0.0;
+    private Integer getTax(Double amt, String bsType) {
+        return (bsType.equals("S")) ? (int) Math.round(amt * 0.003) : 0;
     }
 
-    private Double getNetAmt(Double amt, Integer fee, Double tax, String bsType) {
+    private Double getNetAmt(Double amt, Integer fee, Integer tax, String bsType) {
         return (bsType.equals("B")) ? (-(amt + fee)) : (amt - fee - tax);
     }
 
@@ -226,5 +243,6 @@ public class TransactionService {
         stockInfo.setCurPrice(Math.round(newPrice * 10000.0) / 10000.0);//取小數點後第四位四捨五入
         stockInfoRepo.save(stockInfo);
     }
+
 
 }
