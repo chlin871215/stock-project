@@ -21,7 +21,7 @@ public class UnrealResult {
     private Double remainQty;
     private Integer fee;
     private Double cost;
-    private Double marketValue;
+    private Long marketValue;
     private Double unrealProfit;
 
     /*

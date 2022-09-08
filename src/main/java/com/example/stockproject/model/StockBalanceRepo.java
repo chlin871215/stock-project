@@ -6,14 +6,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface StockBalanceRepo extends JpaRepository<StockBalance, StockBalancePK> {
 
-    @Query(value = "select * from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3 order by DocSeq desc limit 1 ;",nativeQuery = true)
-    StockBalance findByBranchNoAndCustSeqAndStock(String branchNo, String custSeq, String stock);
+    @Query(value = "select * from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3  ;",nativeQuery = true)
+    List<StockBalance> findByBranchNoAndCustSeqAndStock(String branchNo, String custSeq, String stock);
 
-    @Query(value = "select RemainQty from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3 order by ModDate desc,ModTime desc limit 1 ;",nativeQuery = true)
+    @Query(value = "select sum(Qty) from tcnud where BranchNo= ?1 and CustSeq= ?2 and stock= ?3 ;",nativeQuery = true)
     Double getRemainQty(String branchNo, String custSeq, String stock);
+
+    @Query(value = "select distinct Stock from tcnud where BranchNo = ?1 and CustSeq = ?2 order by Stock  ;",nativeQuery = true)
+    List<String> getAllStock(String branchNo, String custSeq);
+
+
 
 
 }

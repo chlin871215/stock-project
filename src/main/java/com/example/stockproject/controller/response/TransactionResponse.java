@@ -5,12 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionResponse {
-    private UnrealResult resultList;
+    private List<UnrealResult> resultList;
     private String responseCode;
     private String message;
 

@@ -36,20 +36,17 @@ public class TransactionController {
         return transactionService.transaction(transactionRequest);
     }
 
-
-
     //查詢彙總未實現損益------------------------------------------------------------------------------------------------
     @PostMapping("/sum")
     public SumUnrealProfit sumUnrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
-        return new SumUnrealProfit(null, null, null);
+        return transactionService.sumUnrealizedGainsAndLosses(unrealProfitRequest);
     }
 
     //查詢個別未實現損益------------------------------------------------------------------------------------------------
-    /*@PostMapping("/detail")
-    public SumUnrealProfit sumUnrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
-        return new SumUnrealProfit(null, null, null);
+    @PostMapping("/detail")
+    public TransactionResponse unrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
+        return transactionService.unrealProfit(unrealProfitRequest);
     }
 
-     */
 
 }
