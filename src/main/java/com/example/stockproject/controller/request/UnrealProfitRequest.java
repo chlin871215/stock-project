@@ -13,4 +13,6 @@ public class UnrealProfitRequest {
     private String branchNo;
     private String custSeq;
     private String stock;
+    private Double upperLimit;
+    private Double lowerLimit;
 }

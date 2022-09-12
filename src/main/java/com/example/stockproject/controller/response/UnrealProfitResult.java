@@ -21,6 +21,7 @@ public class UnrealProfitResult {
     private Double sumCost;
     private Double sumMarketValue;
     private Double sumUnrealProfit;
+    private String sumMargin;
     private List<UnrealResult> detailList;
 
 }

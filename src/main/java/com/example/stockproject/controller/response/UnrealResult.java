@@ -23,6 +23,7 @@ public class UnrealResult {
     private Double cost;
     private Long marketValue;
     private Double unrealProfit;
+    private String margin;
 
     /*
         tradeDate - 交易日期
