@@ -2,6 +2,7 @@ package com.example.stockproject.controller;
 
 import com.example.stockproject.controller.request.TransactionRequest;
 import com.example.stockproject.controller.request.UnrealProfitRequest;
+import com.example.stockproject.controller.request.UpdatePriceRequest;
 import com.example.stockproject.controller.response.SumUnrealProfit;
 import com.example.stockproject.controller.response.TransactionResponse;
 import com.example.stockproject.controller.response.UnrealResult;
@@ -46,6 +47,12 @@ public class TransactionController {
     @PostMapping("/detail")
     public TransactionResponse unrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
         return transactionService.unrealProfit(unrealProfitRequest);
+    }
+
+    //Update Price
+    @PostMapping("/update")
+    public TransactionResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest){
+        return transactionService.updatePrice(updatePriceRequest);
     }
 
 

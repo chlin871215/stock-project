@@ -2,6 +2,7 @@ package com.example.stockproject.service;
 
 import com.example.stockproject.controller.request.TransactionRequest;
 import com.example.stockproject.controller.request.UnrealProfitRequest;
+import com.example.stockproject.controller.request.UpdatePriceRequest;
 import com.example.stockproject.controller.response.SumUnrealProfit;
 import com.example.stockproject.controller.response.TransactionResponse;
 import com.example.stockproject.controller.response.UnrealProfitResult;
@@ -114,20 +115,20 @@ public class TransactionService {
         //process
 
         List<String> stockList;
-        if (unrealProfitRequest.getStock().isBlank()){
-            stockList =stockBalanceRepo.getAllStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq());
-        }else {
-            stockList =new ArrayList<>();
+        if (unrealProfitRequest.getStock().isBlank()) {
+            stockList = stockBalanceRepo.getAllStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq());
+        } else {
+            stockList = new ArrayList<>();
             stockList.add(unrealProfitRequest.getStock());
         }
 
         List<UnrealProfitResult> unrealProfitResults = new ArrayList<>();
 
-        for (String stock:stockList){
+        for (String stock : stockList) {
             getRandomPrice(stock);// 讓股票資訊價格隨機更動
             StockInfo stockInfo = stockInfoRepo.findByStock(stock);
             UnrealProfitResult unrealProfitResult = new UnrealProfitResult();
-            unrealProfitResult.setDetailList(getResultList(new UnrealProfitRequest(unrealProfitRequest.getBranchNo(),unrealProfitRequest.getCustSeq(),stock)));
+            unrealProfitResult.setDetailList(getResultList(new UnrealProfitRequest(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq(), stock)));
             for (UnrealResult unrealResult : unrealProfitResult.getDetailList()) {
                 unrealProfitResult.setSumRemainQty((null == unrealProfitResult.getSumRemainQty()) ? unrealResult.getRemainQty() : unrealProfitResult.getSumRemainQty() + unrealResult.getQty());
                 unrealProfitResult.setSumFee((null == unrealProfitResult.getSumFee()) ? unrealResult.getFee() : unrealProfitResult.getSumFee() + unrealResult.getFee());
@@ -137,7 +138,7 @@ public class TransactionService {
             unrealProfitResult.setStock(stock);
             unrealProfitResult.setStockName(stockInfo.getStockName());
             unrealProfitResult.setNowPrice(stockInfo.getCurPrice());
-            unrealProfitResult.setSumMarketValue(unrealProfitResult.getNowPrice() * unrealProfitResult.getSumRemainQty());
+            unrealProfitResult.setSumMarketValue(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()) - getFee(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty())) - getTax(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()), "S"));
             unrealProfitResults.add(unrealProfitResult);
         }
 
@@ -154,18 +155,18 @@ public class TransactionService {
         if ("001".equals(check(unrealProfitRequest))) return new TransactionResponse(null, "001", "查無符合資料");
         if (null != check(unrealProfitRequest)) return new TransactionResponse(null, "002", check(unrealProfitRequest));
         //process
-        TransactionResponse transactionResponse =new TransactionResponse();
+        TransactionResponse transactionResponse = new TransactionResponse();
 
         List<String> stockList;
-        if (unrealProfitRequest.getStock().isBlank()){
-            stockList =stockBalanceRepo.getAllStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq());
-        }else {
-            stockList =new ArrayList<>();
+        if (unrealProfitRequest.getStock().isBlank()) {
+            stockList = stockBalanceRepo.getAllStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq());
+        } else {
+            stockList = new ArrayList<>();
             stockList.add(unrealProfitRequest.getStock());
         }
         List<UnrealResult> resultList = new ArrayList<>();
-        for (String stock:stockList){
-            for (UnrealResult unrealResult:getResultList(new UnrealProfitRequest(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq() ,stock))){
+        for (String stock : stockList) {
+            for (UnrealResult unrealResult : getResultList(new UnrealProfitRequest(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq(), stock))) {
                 resultList.add(unrealResult);
             }
         }
@@ -174,6 +175,14 @@ public class TransactionService {
         transactionResponse.setResponseCode("000");
         transactionResponse.setMessage("");
         return transactionResponse;
+    }
+
+    public TransactionResponse updatePrice(UpdatePriceRequest updatePriceRequest) {
+        if (null != check(updatePriceRequest)) return new TransactionResponse(null, "002", check(updatePriceRequest));
+        StockInfo stockInfo = stockInfoRepo.findByStock(updatePriceRequest.getStock());
+        stockInfo.setCurPrice(updatePriceRequest.getPrice());
+        stockInfoRepo.save(stockInfo);
+        return new TransactionResponse(null, "000", "");
     }
 
     //method-------------------------------------------------------------------------------------------------------
@@ -208,9 +217,17 @@ public class TransactionService {
         if (unrealProfitRequest.getCustSeq().isBlank()) return "CustSeq data wrong";
         if (unrealProfitRequest.getStock().isBlank()) {
             return null;
-        }else if (null == stockInfoRepo.findByStock(unrealProfitRequest.getStock())) return "Stock doesn't exist";
+        } else if (null == stockInfoRepo.findByStock(unrealProfitRequest.getStock())) return "Stock doesn't exist";
         if (null == stockBalanceRepo.findByBranchNoAndCustSeqAndStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getBranchNo(), unrealProfitRequest.getStock()))
             return "001";
+        return null;
+    }
+
+    private String check(UpdatePriceRequest updatePriceRequest) {
+        if (updatePriceRequest.getStock().isBlank()) return "Stock data wrong";
+        if (null == stockInfoRepo.findByStock(updatePriceRequest.getStock())) return "Stock doesn't exist";
+        if (updatePriceRequest.getPrice() <= 10.0 || updatePriceRequest.getPrice()*100 % 1 != 0)
+            return "Price data wrong";
         return null;
     }
 
