@@ -1,16 +1,13 @@
 package com.example.stockproject.controller;
 
-import com.example.stockproject.controller.request.TodayPay;
-import com.example.stockproject.controller.request.TransactionRequest;
-import com.example.stockproject.controller.request.UnrealProfitRequest;
-import com.example.stockproject.controller.request.UpdatePriceRequest;
+import com.example.stockproject.controller.request.*;
+import com.example.stockproject.controller.response.StockResponse;
 import com.example.stockproject.controller.response.SumUnrealProfit;
 import com.example.stockproject.controller.response.TransactionResponse;
-import com.example.stockproject.controller.response.UnrealResult;
 import com.example.stockproject.model.StockBalanceRepo;
 import com.example.stockproject.model.StockInfoRepo;
 import com.example.stockproject.model.TransactionRepo;
-import com.example.stockproject.model.entity.TransactionDetail;
+import com.example.stockproject.model.entity.StockInfo;
 import com.example.stockproject.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,14 +49,20 @@ public class TransactionController {
 
     //Update Price
     @PostMapping("/update")
-    public TransactionResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest){
+    public TransactionResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest) {
         return transactionService.updatePrice(updatePriceRequest);
     }
+
     //today
     @PostMapping("/today")
-    public Double todayPay(@RequestBody TodayPay todayPay){
+    public Double todayPay(@RequestBody TodayPay todayPay) {
         return transactionService.todayPay(todayPay);
     }
 
+    //caching stockInfo
+    @PostMapping("/info")
+    public StockResponse cachingStock(@RequestBody StockRequest stock) {
+        return transactionService.cachingStock(stock);
+    }
 
 }

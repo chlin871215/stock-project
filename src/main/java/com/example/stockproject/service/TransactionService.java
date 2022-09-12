@@ -1,13 +1,8 @@
 package com.example.stockproject.service;
 
-import com.example.stockproject.controller.request.TodayPay;
-import com.example.stockproject.controller.request.TransactionRequest;
-import com.example.stockproject.controller.request.UnrealProfitRequest;
-import com.example.stockproject.controller.request.UpdatePriceRequest;
-import com.example.stockproject.controller.response.SumUnrealProfit;
-import com.example.stockproject.controller.response.TransactionResponse;
-import com.example.stockproject.controller.response.UnrealProfitResult;
-import com.example.stockproject.controller.response.UnrealResult;
+import com.example.stockproject.controller.request.*;
+import com.example.stockproject.controller.response.*;
+import com.example.stockproject.model.HolidayRepo;
 import com.example.stockproject.model.StockBalanceRepo;
 import com.example.stockproject.model.StockInfoRepo;
 import com.example.stockproject.model.TransactionRepo;
@@ -15,6 +10,7 @@ import com.example.stockproject.model.entity.StockBalance;
 import com.example.stockproject.model.entity.StockInfo;
 import com.example.stockproject.model.entity.TransactionDetail;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -35,6 +31,8 @@ public class TransactionService {
     TransactionRepo transactionRepo;
     @Autowired
     StockBalanceRepo stockBalanceRepo;
+    @Autowired
+    HolidayRepo holidayRepo;
 
     public TransactionResponse transaction(TransactionRequest transactionRequest) {
         //check:request資訊是否正確、股票餘額是否足夠
@@ -133,7 +131,7 @@ public class TransactionService {
                 unrealProfitResult.setSumCost((null == unrealProfitResult.getSumCost()) ? unrealResult.getCost() : unrealProfitResult.getSumCost() + unrealResult.getCost());
                 unrealProfitResult.setSumUnrealProfit((null == unrealProfitResult.getSumUnrealProfit()) ? unrealResult.getUnrealProfit() : unrealProfitResult.getSumUnrealProfit() + unrealResult.getUnrealProfit());
                 unrealProfitResult.setSumMarketValue(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()) - getFee(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty())) - getTax(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()), "S"));
-                unrealProfitResult.setSumMargin(String.format("%.2f",getRoundTwo(unrealProfitResult.getSumUnrealProfit() / unrealProfitResult.getSumCost() * 100)) + "%");
+                unrealProfitResult.setSumMargin(String.format("%.2f", getRoundTwo(unrealProfitResult.getSumUnrealProfit() / unrealProfitResult.getSumCost() * 100)) + "%");
             }
             unrealProfitResults.add(unrealProfitResult);
         }
@@ -190,15 +188,43 @@ public class TransactionService {
         Calendar cd = Calendar.getInstance();
         int day = Integer.parseInt(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
         int dayOfWeek = cd.get(Calendar.DAY_OF_WEEK) - 1;//0~1:日~六
-        if (dayOfWeek == 1) {
-            day -= 3;//-3
+
+         if (dayOfWeek == 4||dayOfWeek == 5) {
+            if (null != holidayRepo.findByHoliday(dayOfWeek - 1) || null != holidayRepo.findByHoliday(dayOfWeek - 2)) {
+                day -= 3;
+            } else {
+                day -= 2;
+            }
+        }else if (dayOfWeek == 3) {
+            if (null != holidayRepo.findByHoliday(dayOfWeek - 1) || null != holidayRepo.findByHoliday(dayOfWeek - 2)) {
+                day -= 5;
+            } else {
+                day -= 2;
+            }
         } else if (dayOfWeek == 2) {
-            day -= 4;//-4
-        } else {
-            day -= 2;
+            if (null != holidayRepo.findByHoliday(dayOfWeek - 1) || null != holidayRepo.findByHoliday(dayOfWeek - 4)) {
+                day -= 5;
+            } else {
+                day -= 2;
+            }
+        } else if (dayOfWeek == 1) {
+            if (null != holidayRepo.findByHoliday(dayOfWeek - 3) || null != holidayRepo.findByHoliday(dayOfWeek - 4)) {
+                day -= 5;
+            } else {
+                day -= 4;
+            }
         }
         String tradeDate = Integer.toString(day);
         return stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), tradeDate);
+    }
+
+    @Cacheable(value = "stockInfo_cache", key = "'stock:'+#stock.getStock()")
+    public StockResponse cachingStock(StockRequest stock) {
+        //check
+        if (null == stockInfoRepo.findByStock(stock.getStock()))
+            return new StockResponse(null, "Stock data wrong");
+        StockInfo stockInfo = stockInfoRepo.findByStock(stock.getStock());
+        return new StockResponse(stockInfo, "");
     }
 
     //method-------------------------------------------------------------------------------------------------------
@@ -224,7 +250,7 @@ public class TransactionService {
                         stockBalance.getCost(),
                         Math.round(stockInfo.getCurPrice() * stockBalance.getQty()),
                         getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()),
-                        String.format("%.2f",getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
+                        String.format("%.2f", getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
                 ));
             } else if (getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100) < unrealProfitRequest.getUpperLimit() && getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100) > unrealProfitRequest.getLowerLimit()) {
                 unrealResults.add(new UnrealResult(
@@ -240,7 +266,7 @@ public class TransactionService {
                         stockBalance.getCost(),
                         Math.round(stockInfo.getCurPrice() * stockBalance.getQty()),
                         getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()),
-                        String.format("%.2f",getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
+                        String.format("%.2f", getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
                 ));
             }
         }
