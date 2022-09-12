@@ -1,5 +1,6 @@
 package com.example.stockproject.service;
 
+import com.example.stockproject.controller.request.TodayPay;
 import com.example.stockproject.controller.request.TransactionRequest;
 import com.example.stockproject.controller.request.UnrealProfitRequest;
 import com.example.stockproject.controller.request.UpdatePriceRequest;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,14 +103,6 @@ public class TransactionService {
 
 
     //查詢未實現損益------------------------------------------------------------------------------------------------
-    /*
-    查詢剩餘股數表
-    取得成本、剩餘股數
-    查詢股票資訊表
-    取得現價
-    未實現損益＝現價*剩餘股數-成本-賣之手續費-賣之交易稅
-    回傳字串
-     */
     public SumUnrealProfit sumUnrealizedGainsAndLosses(UnrealProfitRequest unrealProfitRequest) {
         //check
         if ("001".equals(check(unrealProfitRequest))) return new SumUnrealProfit(null, "001", "查無符合資料");
@@ -139,7 +133,7 @@ public class TransactionService {
                 unrealProfitResult.setSumCost((null == unrealProfitResult.getSumCost()) ? unrealResult.getCost() : unrealProfitResult.getSumCost() + unrealResult.getCost());
                 unrealProfitResult.setSumUnrealProfit((null == unrealProfitResult.getSumUnrealProfit()) ? unrealResult.getUnrealProfit() : unrealProfitResult.getSumUnrealProfit() + unrealResult.getUnrealProfit());
                 unrealProfitResult.setSumMarketValue(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()) - getFee(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty())) - getTax(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()), "S"));
-                unrealProfitResult.setSumMargin((getRoundTwo(unrealProfitResult.getSumUnrealProfit() / unrealProfitResult.getSumCost() * 100)) + "%");
+                unrealProfitResult.setSumMargin(String.format("%.2f",getRoundTwo(unrealProfitResult.getSumUnrealProfit() / unrealProfitResult.getSumCost() * 100)) + "%");
             }
             unrealProfitResults.add(unrealProfitResult);
         }
@@ -179,12 +173,32 @@ public class TransactionService {
         return transactionResponse;
     }
 
+    //updatePrice
     public TransactionResponse updatePrice(UpdatePriceRequest updatePriceRequest) {
         if (null != check(updatePriceRequest)) return new TransactionResponse(null, "002", check(updatePriceRequest));
         StockInfo stockInfo = stockInfoRepo.findByStock(updatePriceRequest.getStock());
         stockInfo.setCurPrice(updatePriceRequest.getPrice());
         stockInfoRepo.save(stockInfo);
         return new TransactionResponse(null, "000", "");
+    }
+
+    //todayPay
+    public Double todayPay(TodayPay todayPay) {
+        //check
+
+        //process
+        Calendar cd = Calendar.getInstance();
+        int day = Integer.parseInt(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        int dayOfWeek = cd.get(Calendar.DAY_OF_WEEK) - 1;//0~1:日~六
+        if (dayOfWeek == 1) {
+            day -= 3;//-3
+        } else if (dayOfWeek == 2) {
+            day -= 4;//-4
+        } else {
+            day -= 2;
+        }
+        String tradeDate = Integer.toString(day);
+        return stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), tradeDate);
     }
 
     //method-------------------------------------------------------------------------------------------------------
@@ -210,7 +224,7 @@ public class TransactionService {
                         stockBalance.getCost(),
                         Math.round(stockInfo.getCurPrice() * stockBalance.getQty()),
                         getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()),
-                        (getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
+                        String.format("%.2f",getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
                 ));
             } else if (getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100) < unrealProfitRequest.getUpperLimit() && getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100) > unrealProfitRequest.getLowerLimit()) {
                 unrealResults.add(new UnrealResult(
@@ -226,7 +240,7 @@ public class TransactionService {
                         stockBalance.getCost(),
                         Math.round(stockInfo.getCurPrice() * stockBalance.getQty()),
                         getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()),
-                        (getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
+                        String.format("%.2f",getRoundTwo(getUnreal(stockBalance.getStock(), stockBalance.getCost(), stockBalance.getQty()) / stockBalance.getCost() * 100)) + "%"
                 ));
             }
         }

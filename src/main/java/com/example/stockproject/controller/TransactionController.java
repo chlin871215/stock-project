@@ -1,5 +1,6 @@
 package com.example.stockproject.controller;
 
+import com.example.stockproject.controller.request.TodayPay;
 import com.example.stockproject.controller.request.TransactionRequest;
 import com.example.stockproject.controller.request.UnrealProfitRequest;
 import com.example.stockproject.controller.request.UpdatePriceRequest;
@@ -53,6 +54,11 @@ public class TransactionController {
     @PostMapping("/update")
     public TransactionResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest){
         return transactionService.updatePrice(updatePriceRequest);
+    }
+    //today
+    @PostMapping("/today")
+    public Double todayPay(@RequestBody TodayPay todayPay){
+        return transactionService.todayPay(todayPay);
     }
 
 
