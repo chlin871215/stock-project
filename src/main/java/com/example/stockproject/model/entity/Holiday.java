@@ -16,5 +16,5 @@ import javax.persistence.*;
 public class Holiday {
     @Id
     @Column(name = "holiday")
-    private Integer holiday;
+    private String holiday;
 }

@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HolidayRepo extends JpaRepository<Holiday, Integer> {
 
-    Holiday findByHoliday(Integer holiday);
+    Holiday findByHoliday(String holiday);
 }

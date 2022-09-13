@@ -13,11 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -185,40 +187,21 @@ public class TransactionService {
         //check
 
         //process
-        Calendar cd = Calendar.getInstance();
-        int day = Integer.parseInt(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-        int dayOfWeek = cd.get(Calendar.DAY_OF_WEEK) - 1;//0~1:日~六
-
-         if (dayOfWeek == 4||dayOfWeek == 5) {
-            if (null != holidayRepo.findByHoliday(dayOfWeek - 1) || null != holidayRepo.findByHoliday(dayOfWeek - 2)) {
-                day -= 3;
-            } else {
-                day -= 2;
-            }
-        }else if (dayOfWeek == 3) {
-            if (null != holidayRepo.findByHoliday(dayOfWeek - 1) || null != holidayRepo.findByHoliday(dayOfWeek - 2)) {
-                day -= 5;
-            } else {
-                day -= 2;
-            }
-        } else if (dayOfWeek == 2) {
-            if (null != holidayRepo.findByHoliday(dayOfWeek - 1) || null != holidayRepo.findByHoliday(dayOfWeek - 4)) {
-                day -= 5;
-            } else {
-                day -= 2;
-            }
-        } else if (dayOfWeek == 1) {
-            if (null != holidayRepo.findByHoliday(dayOfWeek - 3) || null != holidayRepo.findByHoliday(dayOfWeek - 4)) {
-                day -= 5;
-            } else {
-                day -= 4;
+        Calendar today = Calendar.getInstance();
+        Calendar target = Calendar.getInstance();
+        target.add(Calendar.DATE, -2);//預期目標日為今日回推兩天
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        while (0 != today.compareTo(target)) {//當目前日期不等於目標日期則執行迴圈
+            today.add(Calendar.DATE, -1);//回到前一天
+            //前一天是假日則使預期目標日回推一天
+            if (null != holidayRepo.findByHoliday(sdf.format(today.getTime())) || today.get(Calendar.DAY_OF_WEEK) == 1 || today.get(Calendar.DAY_OF_WEEK) == 7) {
+                target.add(Calendar.DATE, -1);
             }
         }
-        String tradeDate = Integer.toString(day);
-        return stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), tradeDate);
+        return stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime()));
     }
 
-    @Cacheable(value = "stockInfo_cache", key = "'stock:'+#stock.getStock()")
+    @Cacheable(cacheNames = "stockInfo_cache", key = "#stock.getStock()")
     public StockResponse cachingStock(StockRequest stock) {
         //check
         if (null == stockInfoRepo.findByStock(stock.getStock()))
@@ -236,7 +219,7 @@ public class TransactionService {
         String stockName = stockInfo.getStockName();
         Double curPrice = stockInfo.getCurPrice();
         for (StockBalance stockBalance : stockBalances) {
-            if (0.0 == unrealProfitRequest.getUpperLimit() && 0.0 == unrealProfitRequest.getLowerLimit()) {
+            if (unrealProfitRequest.getUpperLimit() == unrealProfitRequest.getLowerLimit()) {
                 unrealResults.add(new UnrealResult(
                         stockBalance.getTradeDate(),
                         stockBalance.getDocSeq(),
