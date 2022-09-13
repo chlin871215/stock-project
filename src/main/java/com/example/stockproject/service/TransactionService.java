@@ -183,9 +183,9 @@ public class TransactionService {
     }
 
     //todayPay
-    public Double todayPay(TodayPay todayPay) {
+    public PaymentResponse todayPay(TodayPay todayPay) {
         //check
-
+        if (null != check(todayPay)) return new PaymentResponse(check(todayPay), 0l);
         //process
         Calendar today = Calendar.getInstance();
         Calendar target = Calendar.getInstance();
@@ -198,7 +198,10 @@ public class TransactionService {
                 target.add(Calendar.DATE, -1);
             }
         }
-        return stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime()));
+        if (null == stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime()))) {
+            return new PaymentResponse("Today's payment is 0", 0l);
+        }
+        return new PaymentResponse("", stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime())));
     }
 
     @Cacheable(cacheNames = "stockInfo_cache", key = "#stock.getStock()")
@@ -256,9 +259,17 @@ public class TransactionService {
         return unrealResults;
     }
 
+    private String check(TodayPay todayPay) {
+        if (todayPay.getBranchNo().isBlank() || todayPay.getBranchNo().length() > 4) return "BranchNo data wrong";
+        if (todayPay.getCustSeq().isBlank() || todayPay.getCustSeq().length() > 7) return "CustSeq data wrong";
+        return null;
+    }
+
     private String check(UnrealProfitRequest unrealProfitRequest) {
-        if (unrealProfitRequest.getBranchNo().isBlank()) return "BranchNo data wrong";
-        if (unrealProfitRequest.getCustSeq().isBlank()) return "CustSeq data wrong";
+        if (unrealProfitRequest.getBranchNo().isBlank() || unrealProfitRequest.getBranchNo().length() > 4)
+            return "BranchNo data wrong";
+        if (unrealProfitRequest.getCustSeq().isBlank() || unrealProfitRequest.getCustSeq().length() > 7)
+            return "CustSeq data wrong";
         if (unrealProfitRequest.getUpperLimit() < unrealProfitRequest.getLowerLimit()) return "Limit data wrong";
         if (unrealProfitRequest.getStock().isBlank()) {
             return null;
@@ -271,7 +282,7 @@ public class TransactionService {
     private String check(UpdatePriceRequest updatePriceRequest) {
         if (updatePriceRequest.getStock().isBlank()) return "Stock data wrong";
         if (null == stockInfoRepo.findByStock(updatePriceRequest.getStock())) return "Stock doesn't exist";
-        if (updatePriceRequest.getPrice() <= 10.0 || updatePriceRequest.getPrice() * 100 % 1 != 0)
+        if (updatePriceRequest.getPrice() < 10.0 || updatePriceRequest.getPrice() * 100 % 1 != 0)
             return "Price data wrong";
         return null;
     }
@@ -279,13 +290,17 @@ public class TransactionService {
     private String check(TransactionRequest transactionRequest) {
         //check:request資訊是否正確、股票餘額是否足夠
         //check:tradeDate
-        if (transactionRequest.getTradeDate().isBlank()) return "TradeDate data wrong";
+        if (transactionRequest.getTradeDate().isBlank() || transactionRequest.getTradeDate().length() > 8)
+            return "TradeDate data wrong";
         //check:branchNo
-        if (transactionRequest.getBranchNo().isBlank()) return "BranchNo data wrong";
+        if (transactionRequest.getBranchNo().isBlank() || transactionRequest.getBranchNo().length() > 4)
+            return "BranchNo data wrong";
         //check:custSeq
-        if (transactionRequest.getCustSeq().isBlank()) return "CustSeq data wrong";
+        if (transactionRequest.getCustSeq().isBlank() || transactionRequest.getCustSeq().length() > 7)
+            return "CustSeq data wrong";
         //check:docSeq
-        if (transactionRequest.getDocSeq().isBlank()) return "DocSeq data wrong";
+        if (transactionRequest.getDocSeq().isBlank() || transactionRequest.getDocSeq().length() > 5)
+            return "DocSeq data wrong";
         //check:stock
         if (transactionRequest.getStock().isBlank()) return "Stock data wrong";
         //check:price
