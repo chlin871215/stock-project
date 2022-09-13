@@ -10,6 +10,7 @@ import com.example.stockproject.model.entity.StockBalance;
 import com.example.stockproject.model.entity.StockInfo;
 import com.example.stockproject.model.entity.TransactionDetail;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -173,12 +174,13 @@ public class TransactionService {
     }
 
     //updatePrice
-    public TransactionResponse updatePrice(UpdatePriceRequest updatePriceRequest) {
-        if (null != check(updatePriceRequest)) return new TransactionResponse(null, "002", check(updatePriceRequest));
+    @CachePut(cacheNames = "stockInfo_cache", key = "#updatePriceRequest.getStock()")
+    public StockResponse updatePrice(UpdatePriceRequest updatePriceRequest) {
+        if (null != check(updatePriceRequest)) return new StockResponse(null, check(updatePriceRequest));
         StockInfo stockInfo = stockInfoRepo.findByStock(updatePriceRequest.getStock());
         stockInfo.setCurPrice(updatePriceRequest.getPrice());
         stockInfoRepo.save(stockInfo);
-        return new TransactionResponse(null, "000", "");
+        return new StockResponse(stockInfo, "");
     }
 
     //todayPay

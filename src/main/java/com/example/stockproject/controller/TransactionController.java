@@ -50,7 +50,7 @@ public class TransactionController {
 
     //Update Price
     @PostMapping("/update")
-    public TransactionResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest) {
+    public StockResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest) {
         return transactionService.updatePrice(updatePriceRequest);
     }
 
