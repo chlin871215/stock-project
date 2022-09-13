@@ -1,0 +1,196 @@
+{
+	"info": {
+		"_postman_id": "be603f84-b940-43e1-a3b6-29621fc50b35",
+		"name": "Stock project v2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13937299"
+	},
+	"item": [
+		{
+			"name": "Transaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"tradeDate\":\"20220908\",\n    \"branchNo\":\"F62S\",\n    \"custSeq\":\"00\",\n    \"docSeq\":\"ZZA46\",\n    \"stock\":\"2222\",\n    \"price\":10,\n    \"qty\":2000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/unreal/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"unreal",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UnrealProfit",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"branchNo\":\"F62S\",\n  \"custSeq\":\"00\",\n  \"stock\":\"\",\n  \"upperLimit\":99.00,\n  \"lowerLimit\":99.00\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/unreal/detail",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"unreal",
+						"detail"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SumUnrealProfit",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"branchNo\":\"F62S\",\n  \"custSeq\":\"00\",\n  \"stock\":\"\",\n  \"upperLimit\":1.00,\n  \"lowerLimit\":1.00\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/unreal/sum",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"unreal",
+						"sum"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Price",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"stock\":\"2222\",\n  \"price\":\"33.0\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/unreal/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"unreal",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TodayPay",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"branchNo\":\"F62S\",\n  \"custSeq\":\"00\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/unreal/today",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"unreal",
+						"today"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Caching Stock",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"stock\":\"2222\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/unreal/info",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"unreal",
+						"info"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
