@@ -282,7 +282,7 @@ public class TransactionService {
     private String check(UpdatePriceRequest updatePriceRequest) {
         if (updatePriceRequest.getStock().isBlank()) return "Stock data wrong";
         if (null == stockInfoRepo.findByStock(updatePriceRequest.getStock())) return "Stock doesn't exist";
-        if (updatePriceRequest.getPrice() < 10.0 || updatePriceRequest.getPrice() * 100 % 1 != 0)
+        if (updatePriceRequest.getPrice() < 10.0 || updatePriceRequest.getPrice() * 100 % 1 != 0 || updatePriceRequest.getPrice() >= 1_000_000)
             return "Price data wrong";
         return null;
     }
@@ -304,7 +304,7 @@ public class TransactionService {
         //check:stock
         if (transactionRequest.getStock().isBlank()) return "Stock data wrong";
         //check:price
-        if (transactionRequest.getPrice() <= 0) return "Price data wrong";
+        if (transactionRequest.getPrice() <= 0 || transactionRequest.getPrice() >= 1_000_000) return "Price data wrong";
         //check:docSeq是否存在
         if (null != transactionRepo.findByDocSeqAndTradeDate(transactionRequest.getDocSeq(), transactionRequest.getTradeDate()))
             return "This DocSeq already exist";
