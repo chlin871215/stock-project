@@ -5,11 +5,10 @@ import com.example.stockproject.controller.response.PaymentResponse;
 import com.example.stockproject.controller.response.StockResponse;
 import com.example.stockproject.controller.response.SumUnrealProfit;
 import com.example.stockproject.controller.response.TransactionResponse;
-import com.example.stockproject.model.StockBalanceRepo;
-import com.example.stockproject.model.StockInfoRepo;
-import com.example.stockproject.model.TransactionRepo;
-import com.example.stockproject.model.entity.StockInfo;
+import com.example.stockproject.service.PaymentService;
 import com.example.stockproject.service.TransactionService;
+import com.example.stockproject.service.UnrealService;
+import com.example.stockproject.service.UpdateStockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,12 +22,11 @@ public class TransactionController {
     @Autowired
     TransactionService transactionService;
     @Autowired
-    TransactionRepo transactionRepo;
+    UpdateStockService updateStockService;
     @Autowired
-    StockInfoRepo stockInfoRepo;
-
+    PaymentService paymentService;
     @Autowired
-    StockBalanceRepo stockBalanceRepo;
+    UnrealService unrealService;
 
     //交易--------------------------------------------------------------------------------------------------------
     @PostMapping("/add")
@@ -39,31 +37,32 @@ public class TransactionController {
     //查詢彙總未實現損益------------------------------------------------------------------------------------------------
     @PostMapping("/sum")
     public SumUnrealProfit sumUnrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
-        return transactionService.sumUnrealizedGainsAndLosses(unrealProfitRequest);
+        return unrealService.sumUnrealizedGainsAndLosses(unrealProfitRequest);
     }
 
     //查詢個別未實現損益------------------------------------------------------------------------------------------------
     @PostMapping("/detail")
     public TransactionResponse unrealizedGainsAndLosses(@RequestBody UnrealProfitRequest unrealProfitRequest) {
-        return transactionService.unrealProfit(unrealProfitRequest);
+        return unrealService.unrealProfit(unrealProfitRequest);
     }
 
-    //Update Price
-    @PostMapping("/update")
-    public StockResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest) {
-        return transactionService.updatePrice(updatePriceRequest);
-    }
-
-    //today
+    //today's payment----------------------------------------------------------------------------------------------
     @PostMapping("/today")
     public PaymentResponse todayPay(@RequestBody TodayPay todayPay) {
-        return transactionService.todayPay(todayPay);
+        return paymentService.todayPay(todayPay);
     }
 
-    //caching stockInfo
+
+    //caching stockInfo---------------------------------------------------------------------------------------------
     @PostMapping("/info")
     public StockResponse cachingStock(@RequestBody StockRequest stock) {
-        return transactionService.cachingStock(stock);
+        return updateStockService.cachingStock(stock);
+    }
+
+    //Update Price------------------------------------------------------------------------------------------------
+    @PostMapping("/update")
+    public StockResponse updatePrice(@RequestBody UpdatePriceRequest updatePriceRequest) {
+        return updateStockService.updatePrice(updatePriceRequest);
     }
 
 }
