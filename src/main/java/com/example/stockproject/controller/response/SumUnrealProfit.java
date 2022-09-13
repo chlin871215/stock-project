@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SumUnrealProfit {//彙總未實現損益
+
     private List<UnrealProfitResult> resultList;
     private String responseCode;
     private String message;

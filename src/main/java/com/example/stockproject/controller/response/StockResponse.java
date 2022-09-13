@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StockResponse {
+
     private StockInfo stockInfo;
     private String message;
 }

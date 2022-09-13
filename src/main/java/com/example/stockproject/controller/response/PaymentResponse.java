@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentResponse {
+
     private String response;
     private Long payment;
 }

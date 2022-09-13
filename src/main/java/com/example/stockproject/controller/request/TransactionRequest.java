@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionRequest {
+
     private String tradeDate;
     private String branchNo;
     private String docSeq;

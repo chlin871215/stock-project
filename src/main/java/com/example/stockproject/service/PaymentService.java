@@ -39,7 +39,6 @@ public class PaymentService {
         return new PaymentResponse("", stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime())));
     }
 
-
     private String check(TodayPay todayPay) {
         if (todayPay.getBranchNo().isBlank() || todayPay.getBranchNo().length() > 4) return "BranchNo data wrong";
         if (todayPay.getCustSeq().isBlank() || todayPay.getCustSeq().length() > 7) return "CustSeq data wrong";

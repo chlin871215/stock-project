@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionResponse {
+
     private List<UnrealResult> resultList;
     private String responseCode;
     private String message;

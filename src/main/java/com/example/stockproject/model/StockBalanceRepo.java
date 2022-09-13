@@ -11,19 +11,16 @@ import java.util.List;
 @Repository
 public interface StockBalanceRepo extends JpaRepository<StockBalance, StockBalancePK> {
 
-    @Query(value = "select * from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3  ;",nativeQuery = true)
+    @Query(value = "select * from tcnud where BranchNo = ?1 and CustSeq = ?2 and stock = ?3  ;", nativeQuery = true)
     List<StockBalance> findByBranchNoAndCustSeqAndStock(String branchNo, String custSeq, String stock);
 
-    @Query(value = "select sum(Cost) from tcnud where BranchNo = ?1 and CustSeq = ?2 and TradeDate = ?3  ;",nativeQuery = true)
+    @Query(value = "select sum(Cost) from tcnud where BranchNo = ?1 and CustSeq = ?2 and TradeDate = ?3  ;", nativeQuery = true)
     Long findTodayBalance(String branchNo, String custSeq, String tradeDate);
 
-    @Query(value = "select sum(Qty) from tcnud where BranchNo= ?1 and CustSeq= ?2 and stock= ?3 ;",nativeQuery = true)
+    @Query(value = "select sum(Qty) from tcnud where BranchNo= ?1 and CustSeq= ?2 and stock= ?3 ;", nativeQuery = true)
     Double getRemainQty(String branchNo, String custSeq, String stock);
 
-    @Query(value = "select distinct Stock from tcnud where BranchNo = ?1 and CustSeq = ?2 order by Stock  ;",nativeQuery = true)
+    @Query(value = "select distinct Stock from tcnud where BranchNo = ?1 and CustSeq = ?2 order by Stock  ;", nativeQuery = true)
     List<String> getAllStock(String branchNo, String custSeq);
-
-
-
 
 }

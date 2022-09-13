@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UnrealProfitRequest {
+
     private String branchNo;
     private String custSeq;
     private String stock;

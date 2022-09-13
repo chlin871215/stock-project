@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdatePriceRequest {
+
     private String stock;
     private Double price;
 }

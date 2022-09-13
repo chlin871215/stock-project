@@ -14,8 +14,4 @@ public interface TransactionRepo extends JpaRepository<TransactionDetail, Transa
     @Query(value = "SELECT DocSeq FROM hcmio where TradeDate=?1 ORDER BY DocSeq DESC LIMIT 1", nativeQuery = true)
     String getNewDocSeq(String tradeDate);
 
-    @Query(value = "SELECT * FROM hcmio ORDER BY TradeDate DESC, DocSeq DESC LIMIT 1", nativeQuery = true)
-    TransactionDetail getNewDetail();
-
-
 }

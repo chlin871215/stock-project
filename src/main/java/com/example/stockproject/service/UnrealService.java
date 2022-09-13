@@ -7,7 +7,6 @@ import com.example.stockproject.controller.response.UnrealProfitResult;
 import com.example.stockproject.controller.response.UnrealResult;
 import com.example.stockproject.model.StockBalanceRepo;
 import com.example.stockproject.model.StockInfoRepo;
-import com.example.stockproject.model.TransactionRepo;
 import com.example.stockproject.model.entity.StockBalance;
 import com.example.stockproject.model.entity.StockInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +21,7 @@ public class UnrealService {
     @Autowired
     StockInfoRepo stockInfoRepo;
     @Autowired
-    TransactionRepo transactionRepo;
-    @Autowired
     StockBalanceRepo stockBalanceRepo;
-
 
     //查詢未實現損益------------------------------------------------------------------------------------------------
     public SumUnrealProfit sumUnrealizedGainsAndLosses(UnrealProfitRequest unrealProfitRequest) {
@@ -97,7 +93,6 @@ public class UnrealService {
         return transactionResponse;
     }
 
-
     private List<UnrealResult> getResultList(UnrealProfitRequest unrealProfitRequest) {
         List<StockBalance> stockBalances = stockBalanceRepo.findByBranchNoAndCustSeqAndStock(unrealProfitRequest.getBranchNo(), unrealProfitRequest.getCustSeq(), unrealProfitRequest.getStock());
         List<UnrealResult> unrealResults = new ArrayList<>();
@@ -105,7 +100,7 @@ public class UnrealService {
         String stockName = stockInfo.getStockName();
         Double curPrice = stockInfo.getCurPrice();
         for (StockBalance stockBalance : stockBalances) {
-            if (unrealProfitRequest.getUpperLimit().compareTo(unrealProfitRequest.getLowerLimit())==0) {
+            if (unrealProfitRequest.getUpperLimit().compareTo(unrealProfitRequest.getLowerLimit()) == 0) {
                 unrealResults.add(new UnrealResult(
                         stockBalance.getTradeDate(),
                         stockBalance.getDocSeq(),
