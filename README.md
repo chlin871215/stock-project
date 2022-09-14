@@ -2,7 +2,7 @@
 
 ## API
 
-* Transaction
+* Transaction 交易股票
 
 ```=J
 {
@@ -16,7 +16,7 @@
 }
 ```
 
-* UnrealProfit
+* UnrealProfit 未實現損益
 
 ```=J
 {
@@ -28,7 +28,7 @@
 }
 ```
 
-* SumUnrealProfit
+* SumUnrealProfit 彙總未實現損益
 
 ```=J
 {
@@ -40,7 +40,7 @@
 }
 ```
 
-* UpdatePrice
+* UpdatePrice 更新股票價格
 
 ```=J
 {
@@ -49,7 +49,7 @@
 }
 ```
 
-* TodayPay
+* TodayPay 今日收款金額
 
 ```=J
 {
@@ -58,7 +58,7 @@
 }
 ```
 
-* Caching
+* Caching 查詢股票資訊
 
 ```=J
 {
