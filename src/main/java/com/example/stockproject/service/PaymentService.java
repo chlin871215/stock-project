@@ -22,21 +22,19 @@ public class PaymentService {
         //check
         if (null != check(todayPay)) return new PaymentResponse(check(todayPay), 0l);
         //process
-        Calendar today = Calendar.getInstance();
-        Calendar target = Calendar.getInstance();
-        target.add(Calendar.DATE, -2);//預期目標日為今日回推兩天
+        Calendar theDay = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        while (0 != today.compareTo(target)) {//當目前日期不等於目標日期則執行迴圈
-            today.add(Calendar.DATE, -1);//回到前一天
-            //前一天是假日則使預期目標日回推一天
-            if (null != holidayRepo.findByHoliday(sdf.format(today.getTime())) || today.get(Calendar.DAY_OF_WEEK) == 1 || today.get(Calendar.DAY_OF_WEEK) == 7) {
-                target.add(Calendar.DATE, -1);
+        int count = 0;
+        while (count < 2) {
+            theDay.add(Calendar.DATE, -1);
+            if (null == holidayRepo.findByHoliday(sdf.format(theDay.getTime())) && theDay.get(Calendar.DAY_OF_WEEK) != 1 && theDay.get(Calendar.DAY_OF_WEEK) != 7) {
+                count++;
             }
         }
-        if (null == stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime()))) {
+        if (null == stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(theDay.getTime()))) {
             return new PaymentResponse("Today's payment is 0", 0l);
         }
-        return new PaymentResponse("", stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(target.getTime())));
+        return new PaymentResponse("", stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(theDay.getTime())));
     }
 
     private String check(TodayPay todayPay) {
