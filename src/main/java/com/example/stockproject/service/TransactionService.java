@@ -113,14 +113,15 @@ public class TransactionService {
         //check:stock
         if (transactionRequest.getStock().isBlank()) return "Stock data wrong";
         //check:price
-        if (transactionRequest.getPrice() <= 0 || transactionRequest.getPrice() >= 1_000_000) return "Price data wrong";
+        if (null == transactionRequest.getPrice() || transactionRequest.getPrice() <= 0 || transactionRequest.getPrice() >= 1_000_000)
+            return "Price data wrong";
         //check:docSeq是否存在
         if (null != transactionRepo.findByDocSeqAndTradeDate(transactionRequest.getDocSeq(), transactionRequest.getTradeDate()))
             return "This DocSeq already exist";
         //check:stock是否存在
         if (null == stockInfoRepo.findByStock(transactionRequest.getStock())) return "This Stock doesn't exist";
         //check:qty不得為空或小於等於0或含有小數
-        if (transactionRequest.getQty() <= 0 || null == transactionRequest.getQty() || transactionRequest.getQty() % 1 != 0)
+        if (null == transactionRequest.getQty() || transactionRequest.getQty() <= 0 || null == transactionRequest.getQty() || transactionRequest.getQty() % 1 != 0)
             return "Qty data wrong";
         //qty不得超過9位數
         if (transactionRequest.getQty() >= 1_000_000_000) return "Qty too much";
@@ -135,6 +136,7 @@ public class TransactionService {
                         transactionRequest.getStock()) >= 1_000_000_000) {//remainQty不得超過9位數
             return "RemainQty too much";
         }
+
         return null;
     }
 

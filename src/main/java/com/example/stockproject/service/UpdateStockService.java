@@ -38,6 +38,7 @@ public class UpdateStockService {
     private String check(UpdatePriceRequest updatePriceRequest) {
         if (updatePriceRequest.getStock().isBlank()) return "Stock data wrong";
         if (null == stockInfoRepo.findByStock(updatePriceRequest.getStock())) return "Stock doesn't exist";
+        if (null==updatePriceRequest.getPrice())return "Price data wrong";
         if (updatePriceRequest.getPrice() < 10.0 || updatePriceRequest.getPrice() * 100 % 1 != 0 || updatePriceRequest.getPrice() >= 1_000_000)
             return "Price data wrong";
         return null;

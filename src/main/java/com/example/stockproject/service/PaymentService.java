@@ -24,6 +24,9 @@ public class PaymentService {
         //process
         Calendar theDay = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        if (null != holidayRepo.findByHoliday(sdf.format(theDay.getTime())) || theDay.get(Calendar.DAY_OF_WEEK) == 1 || theDay.get(Calendar.DAY_OF_WEEK) == 7) {
+            return new PaymentResponse("Today's payment is 0", 0l);
+        }
         int count = 0;
         while (count < 2) {
             theDay.add(Calendar.DATE, -1);

@@ -142,7 +142,8 @@ public class UnrealService {
             return "BranchNo data wrong";
         if (unrealProfitRequest.getCustSeq().isBlank() || unrealProfitRequest.getCustSeq().length() > 7)
             return "CustSeq data wrong";
-        if (unrealProfitRequest.getUpperLimit() < unrealProfitRequest.getLowerLimit()) return "Limit data wrong";
+        if (null == unrealProfitRequest.getLowerLimit() || null == unrealProfitRequest.getUpperLimit() || unrealProfitRequest.getUpperLimit() < unrealProfitRequest.getLowerLimit())
+            return "Limit data wrong";
         if (unrealProfitRequest.getStock().isBlank()) {
             return null;
         } else if (null == stockInfoRepo.findByStock(unrealProfitRequest.getStock())) return "Stock doesn't exist";
