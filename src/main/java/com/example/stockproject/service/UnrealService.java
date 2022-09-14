@@ -55,8 +55,12 @@ public class UnrealService {
                 unrealProfitResult.setSumMarketValue(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()) - getFee(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty())) - getTax(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()), "S"));
                 unrealProfitResult.setSumMargin(String.format("%.2f", getRoundTwo(unrealProfitResult.getSumUnrealProfit() / unrealProfitResult.getSumCost() * 100)) + "%");
             }
-            unrealProfitResults.add(unrealProfitResult);
+            if (null!=unrealProfitResult.getSumUnrealProfit()){
+                unrealProfitResults.add(unrealProfitResult);
+            }
         }
+
+        if (0==unrealProfitResults.size()) return new SumUnrealProfit(null,"001","查無符合資料");
 
         return new SumUnrealProfit(
                 unrealProfitResults,
