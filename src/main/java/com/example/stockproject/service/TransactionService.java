@@ -86,7 +86,7 @@ public class TransactionService {
                 Math.abs(transactionDetail.getNetAmt()),
                 Math.round(stockInfoRepo.findByStock(transactionDetail.getStock()).getCurPrice() * transactionDetail.getQty()),
                 getUnreal(transactionDetail.getStock(), Math.abs(transactionDetail.getNetAmt()), transactionDetail.getQty()),
-                (getRoundTwo(getUnreal(transactionDetail.getStock(), Math.abs(transactionDetail.getNetAmt()), transactionDetail.getQty()) / Math.abs(transactionDetail.getNetAmt()) * 100)) + "%"
+                String.format("%.2f",(getRoundTwo(getUnreal(transactionDetail.getStock(), Math.abs(transactionDetail.getNetAmt()), transactionDetail.getQty()) / Math.abs(transactionDetail.getNetAmt()) * 100))) + "%"
         ));
         return new TransactionResponse(
                 unrealResults,
