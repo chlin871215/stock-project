@@ -9,9 +9,22 @@ import com.example.stockproject.model.StockBalanceRepo;
 import com.example.stockproject.model.StockInfoRepo;
 import com.example.stockproject.model.entity.StockBalance;
 import com.example.stockproject.model.entity.StockInfo;
+import com.example.stockproject.model.entity.Symbols;
+import org.hibernate.internal.util.xml.Origin;
+import org.hibernate.internal.util.xml.XmlDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,12 +68,12 @@ public class UnrealService {
                 unrealProfitResult.setSumMarketValue(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()) - getFee(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty())) - getTax(getAmt(unrealProfitResult.getNowPrice(), unrealProfitResult.getSumRemainQty()), "S"));
                 unrealProfitResult.setSumMargin(String.format("%.2f", getRoundTwo(unrealProfitResult.getSumUnrealProfit() / unrealProfitResult.getSumCost() * 100)) + "%");
             }
-            if (null!=unrealProfitResult.getSumUnrealProfit()){
+            if (null != unrealProfitResult.getSumUnrealProfit()) {
                 unrealProfitResults.add(unrealProfitResult);
             }
         }
 
-        if (0==unrealProfitResults.size()) return new SumUnrealProfit(null,"001","查無符合資料");
+        if (0 == unrealProfitResults.size()) return new SumUnrealProfit(null, "001", "查無符合資料");
 
         return new SumUnrealProfit(
                 unrealProfitResults,
@@ -157,8 +170,18 @@ public class UnrealService {
     }
 
     private Double getUnreal(String stock, Double cost, Double qty) {
-        Double curPrice = stockInfoRepo.findByStock(stock).getCurPrice();
+        Double curPrice = getCurPrice(stock);
         return (double) Math.round((curPrice * qty) - cost - getFee(getAmt(curPrice, qty)) - getTax(getAmt(curPrice, qty), "S"));
+    }
+
+    private Double getCurPrice(String stock) {
+        String urlString = "http://systexdemo.ddns.net:443/Quote/Stock.jsp?stock=" + stock;
+        Double response;
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            response=Double.parseDouble(restTemplate.getForObject(urlString, Symbols.class).getSymbolList().get(0).getDealprice());
+        }finally {}
+        return response;
     }
 
     private Double getAmt(Double price, Double qty) {
