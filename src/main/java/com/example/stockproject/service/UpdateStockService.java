@@ -15,6 +15,8 @@ public class UpdateStockService {
 
     @Autowired
     StockInfoRepo stockInfoRepo;
+    @Autowired
+    CalService calService;
 
     @Cacheable(cacheNames = "stockInfo_cache", key = "#stock.getStock()")
     public StockResponse cachingStock(StockRequest stock) {
@@ -28,20 +30,13 @@ public class UpdateStockService {
     //updatePrice
     @CachePut(cacheNames = "stockInfo_cache", key = "#updatePriceRequest.getStock()")
     public StockResponse updatePrice(UpdatePriceRequest updatePriceRequest) {
-        if (null != check(updatePriceRequest)) return new StockResponse(null, check(updatePriceRequest));
+        if (null != calService.check(updatePriceRequest)) return new StockResponse(null, calService.check(updatePriceRequest));
         StockInfo stockInfo = stockInfoRepo.findByStock(updatePriceRequest.getStock());
         stockInfo.setCurPrice(updatePriceRequest.getPrice());
         stockInfoRepo.save(stockInfo);
         return new StockResponse(stockInfo, "");
     }
 
-    private String check(UpdatePriceRequest updatePriceRequest) {
-        if (updatePriceRequest.getStock().isBlank()) return "Stock data wrong";
-        if (null == stockInfoRepo.findByStock(updatePriceRequest.getStock())) return "Stock doesn't exist";
-        if (null==updatePriceRequest.getPrice())return "Price data wrong";
-        if (updatePriceRequest.getPrice() < 10.0 || updatePriceRequest.getPrice() * 100 % 1 != 0 || updatePriceRequest.getPrice() >= 1_000_000)
-            return "Price data wrong";
-        return null;
-    }
+
 
 }

@@ -16,11 +16,13 @@ public class PaymentService {
     HolidayRepo holidayRepo;
     @Autowired
     StockBalanceRepo stockBalanceRepo;
+    @Autowired
+    CalService calService;
 
     //todayPay
     public PaymentResponse todayPay(TodayPay todayPay) {
         //check
-        if (null != check(todayPay)) return new PaymentResponse(check(todayPay), 0l);
+        if (null != calService.check(todayPay)) return new PaymentResponse(calService.check(todayPay), 0l);
         //process
         Calendar theDay = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -38,12 +40,6 @@ public class PaymentService {
             return new PaymentResponse("Today's payment is 0", 0l);
         }
         return new PaymentResponse("", stockBalanceRepo.findTodayBalance(todayPay.getBranchNo(), todayPay.getCustSeq(), sdf.format(theDay.getTime())));
-    }
-
-    private String check(TodayPay todayPay) {
-        if (todayPay.getBranchNo().isBlank() || todayPay.getBranchNo().length() > 4) return "BranchNo data wrong";
-        if (todayPay.getCustSeq().isBlank() || todayPay.getCustSeq().length() > 7) return "CustSeq data wrong";
-        return null;
     }
 
 }
